@@ -1,0 +1,21 @@
+### IDE ###
+nbproject/
+.idea/
+
+### Composer ###
+composer.phar
+
+### Node ###
+node_modules/
+
+### General ###
+*.log
+cache.properties
+
+### CI ###
+.build/bin/
+.build/vendor/
+.build/web/
+.build/logs/
+.build/coverage/
+.build/pdepend/

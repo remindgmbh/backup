@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" product-name="rmnd_backup">
+        <header/>
+        <body>
+            <trans-unit id="module">
+                <source>Database Backup</source>
+            </trans-unit>
+            <trans-unit id="module.export">
+                <source>Export</source>
+            </trans-unit>
+            <trans-unit id="module.import">
+                <source>Import</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

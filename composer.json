@@ -1,0 +1,52 @@
+{
+    "name": "remind/backup",
+    "type": "typo3-cms-extension",
+    "description": "REMIND - Backup Extension",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "REMIND GmbH",
+            "email": "technik@remind.de"
+        },
+        {
+            "name": "David Mellen",
+            "email": "d.mellen@remind.de"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": "^12.4"
+    },
+    "require-dev": {
+        "slevomat/coding-standard": "^8.14",
+        "squizlabs/php_codesniffer": "^3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Remind\\Backup\\": "Classes/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "apcu-autoloader": true,
+        "vendor-dir": ".build/vendor",
+        "bin-dir": ".build/bin",
+        "allow-plugins": {
+            "typo3/cms-composer-installers": true,
+            "typo3/class-alias-loader": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "typo3/cms": {
+            "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "web-dir": ".build/web",
+            "extension-key": "rmnd_backup"
+        }
+    },
+    "scripts": {
+        "phpcs": "@php ./.build/bin/phpcs --standard=.build/phpcs.xml --extensions=php --ignore=.build --report=full -n .",
+        "phpcbf": "@php ./.build/bin/phpcbf --standard=.build/phpcs.xml --extensions=php --ignore=.build ."
+    }
+}

@@ -1,0 +1,28 @@
+# customsubcategory=defaults=Defaults
+# customsubcategory=delete=Delete
+# customsubcategory=import=Import
+# customsubcategory=export=Export
+
+# cat=basic/defaults; type=string; label=Default Directory: Default directory to save the database dump
+defaultDir = /var/www/html/backup
+
+# cat=basic/defaults; type=string; label=Default Filename: Default name of the database dump
+defaultFile = db
+
+delete {
+    # cat=basic/delete; type=boolean; label=Enable Backup Delete: Enable backup delete command
+    enable = 0
+
+    # cat=basic/delete; type=int+; label=Keep Count: Define how many database backups should be kept
+    keepCount = 10
+}
+
+export {
+    # cat=basic/export; type=boolean; label=Enable Export: Enable database export command
+    enable = 0
+}
+
+import {
+    # cat=basic/import; type=boolean; label=Enable Import: Enable database import command
+    enable = 0
+}

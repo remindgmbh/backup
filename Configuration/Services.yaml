@@ -1,0 +1,22 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+  Remind\Backup\:
+    resource: '../Classes/*'
+  Remind\Backup\Command\ExportCommand:
+    tags:
+      - name: console.command
+        command: 'remind:database:export'
+        description: 'Export database'
+  Remind\Backup\Command\ImportCommand:
+    tags:
+      - name: console.command
+        command: 'remind:database:import'
+        description: 'Import database'
+  Remind\Backup\Command\DeleteBackupCommand:
+    tags:
+      - name: console.command
+        command: 'remind:database:delete'
+        description: 'Delete database backup'
