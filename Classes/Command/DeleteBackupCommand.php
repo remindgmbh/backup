@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Remind\Backup\Command;
 
-use Remind\Backup\Utility\FileNameUtility;
+use Remind\Backup\Utility\FileNamingUtility;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -70,13 +70,13 @@ final class DeleteBackupCommand extends Command
 
         $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING), ['.', '..']));
         $matches = array_filter($files, function (string $fileToCheck) use ($file) {
-            return preg_match(FileNameUtility::getRegexPattern($file), $fileToCheck);
+            return preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
         });
 
         $filesToBeDeleted = array_slice($matches, 0, -$input->getOption(self::INPUT_KEEP_COUNT));
 
         foreach ($filesToBeDeleted as $file) {
-            unlink(FileNameUtility::buildPath($dir, $file));
+            unlink(FileNamingUtility::buildPath($dir, $file));
         }
 
         return Command::SUCCESS;
