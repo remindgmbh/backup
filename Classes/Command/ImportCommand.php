@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Remind\Backup\Command;
 
 use Remind\Backup\Service\DatabaseService;
-use Remind\Backup\Utility\FileNameUtility;
+use Remind\Backup\Utility\FileNamingUtility;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -58,7 +58,7 @@ final class ImportCommand extends Command
         $dir = $input->getOption(self::INPUT_DIR);
         $file = $input->getOption(self::INPUT_FILE);
 
-        $path = FileNameUtility::buildPath($dir, $file, false, true);
+        $path = FileNamingUtility::buildPath($dir, $file, false, true);
 
         if (!file_exists($path)) {
             if (!is_dir($dir)) {
@@ -68,10 +68,10 @@ final class ImportCommand extends Command
 
             $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING), ['.', '..']));
             $matches = array_filter($files, function (string $fileToCheck) use ($file) {
-                return preg_match(FileNameUtility::getRegexPattern($file), $fileToCheck);
+                return preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
             });
             if (!empty($matches)) {
-                $path = FileNameUtility::buildPath($dir, array_pop($matches));
+                $path = FileNamingUtility::buildPath($dir, array_pop($matches));
                 $output->writeln(sprintf('Use \'%s\' for import.', $path));
             } else {
                 $output->writeln(sprintf('File \'%s\' does not exist.', $path));

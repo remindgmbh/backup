@@ -8,15 +8,15 @@ services:
   Remind\Backup\Command\ExportCommand:
     tags:
       - name: console.command
-        command: 'remind:database:export'
+        command: 'remind:backup:export'
         description: 'Export database'
   Remind\Backup\Command\ImportCommand:
     tags:
       - name: console.command
-        command: 'remind:database:import'
+        command: 'remind:backup:import'
         description: 'Import database'
   Remind\Backup\Command\DeleteBackupCommand:
     tags:
       - name: console.command
-        command: 'remind:database:delete'
+        command: 'remind:backup:delete'
         description: 'Delete database backup'

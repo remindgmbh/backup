@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Remind\Backup\Command;
 
 use Remind\Backup\Service\DatabaseService;
-use Remind\Backup\Utility\FileNameUtility;
+use Remind\Backup\Utility\FileNamingUtility;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -96,7 +96,7 @@ final class ExportCommand extends Command
 
         $dir = $input->getOption(self::INPUT_DIR);
 
-        $path = FileNameUtility::buildPath(
+        $path = FileNamingUtility::buildPath(
             $dir,
             $input->getOption(self::INPUT_FILE),
             !$input->getOption(self::INPUT_OMIT_TIMESTAMP),

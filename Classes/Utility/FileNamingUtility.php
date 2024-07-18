@@ -6,7 +6,7 @@ namespace Remind\Backup\Utility;
 
 use TYPO3\CMS\Core\Utility\PathUtility;
 
-class FileNameUtility
+class FileNamingUtility
 {
     public static function getRegexPattern(string $file): string
     {
