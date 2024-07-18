@@ -23,9 +23,9 @@ class DatabaseService
         $this->connection = $connectionPool->getConnectionByName(self::CONNECTION_NAME);
     }
 
-    public function mysql(?array $args = [], mixed $input = null): Process
+    public function mysql(mixed $input = null): Process
     {
-        $command = ['mysql', ...$this->buildConnectionArguments(), ...$args];
+        $command = ['mysql', ...$this->buildConnectionArguments()];
         return new Process($command, null, null, $input);
     }
 

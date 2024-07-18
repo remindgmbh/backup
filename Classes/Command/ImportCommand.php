@@ -81,7 +81,7 @@ final class ImportCommand extends Command
 
         $stream = fopen($path, 'r');
 
-        $process = $this->databaseService->mysql(null, $stream);
+        $process = $this->databaseService->mysql($stream);
 
         $exitCode = $process->run();
 
