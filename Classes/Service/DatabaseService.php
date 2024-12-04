@@ -32,7 +32,9 @@ class DatabaseService
     public function mysql(mixed $input = null): Process
     {
         $command = ['mysql', ...$this->buildConnectionArguments()];
-        return new Process($command, null, null, $input);
+        $process = new Process($command, null, null, $input);
+        $process->setTimeout(null);
+        return $process;
     }
 
     /**
@@ -41,7 +43,9 @@ class DatabaseService
     public function mysqldump(array $args = []): Process
     {
         $command = ['mysqldump', ...$this->buildConnectionArguments(), ...$args];
-        return new Process($command);
+        $process = new Process($command);
+        $process->setTimeout(null);
+        return $process;
     }
 
     public function getDbName(): string
