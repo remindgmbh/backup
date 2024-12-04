@@ -25,6 +25,7 @@ final class ExportCommand extends Command
         'be_sessions',
         'fe_sessions',
         'fe_users',
+        'sys_file_processedfile',
         'sys_history',
         'sys_http_report',
         'sys_lockedrecords',
