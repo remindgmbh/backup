@@ -17,6 +17,9 @@ final class ImportCommand extends Command
     private const INPUT_DIR = 'dir';
     private const INPUT_FILE = 'file';
 
+    /**
+     * @var mixed[]
+     */
     private array $extensionConfiguration;
 
     public function __construct(
@@ -66,9 +69,9 @@ final class ImportCommand extends Command
                 return Command::FAILURE;
             }
 
-            $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING), ['.', '..']));
+            $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING) ?: [], ['.', '..']));
             $matches = array_filter($files, function (string $fileToCheck) use ($file) {
-                return preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
+                return (bool) preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
             });
             if (!empty($matches)) {
                 $path = FileNamingUtility::buildPath($dir, array_pop($matches));

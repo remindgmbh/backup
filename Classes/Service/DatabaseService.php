@@ -12,8 +12,14 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class DatabaseService
 {
     private const CONNECTION_NAME = 'Default';
+
+    /**
+     * @var mixed[]
+     */
     private array $connectionConfig;
+
     private Connection $connection;
+
     private ?string $myCnf = null;
 
     public function __construct()
@@ -29,6 +35,9 @@ class DatabaseService
         return new Process($command, null, null, $input);
     }
 
+    /**
+     * @param string[] $args
+     */
     public function mysqldump(array $args = []): Process
     {
         $command = ['mysqldump', ...$this->buildConnectionArguments(), ...$args];
@@ -40,11 +49,17 @@ class DatabaseService
         return $this->connectionConfig['dbname'];
     }
 
+    /**
+     * @return string[]
+     */
     public function getTableNames(): array
     {
         return $this->connection->getSchemaManager()->listTableNames();
     }
 
+    /**
+     * @return string[]
+     */
     private function buildConnectionArguments(): array
     {
         return [
@@ -57,12 +72,15 @@ class DatabaseService
         ];
     }
 
-    private function createMyCnf()
+    private function createMyCnf(): string
     {
         $user = $this->connectionConfig['user'] ?? null;
         $password = $this->connectionConfig['password'] ?? null;
 
-        if ($this->myCnf && file_exists($this->myCnf)) {
+        if (
+            $this->myCnf &&
+            file_exists($this->myCnf)
+        ) {
             return $this->myCnf;
         }
 

@@ -16,6 +16,10 @@ final class DeleteBackupCommand extends Command
     private const INPUT_DIR = 'dir';
     private const INPUT_FILE = 'file';
     private const INPUT_KEEP_COUNT = 'keep-count';
+
+    /**
+     * @var mixed[]
+     */
     private array $extensionConfiguration;
 
     public function __construct(
@@ -68,12 +72,12 @@ final class DeleteBackupCommand extends Command
             return Command::FAILURE;
         }
 
-        $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING), ['.', '..']));
+        $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING) ?: [], ['.', '..']));
         $matches = array_filter($files, function (string $fileToCheck) use ($file) {
-            return preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
+            return (bool) preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
         });
 
-        $filesToBeDeleted = array_slice($matches, 0, -$input->getOption(self::INPUT_KEEP_COUNT));
+        $filesToBeDeleted = array_slice($matches, 0, -(int)$input->getOption(self::INPUT_KEEP_COUNT));
 
         foreach ($filesToBeDeleted as $file) {
             unlink(FileNamingUtility::buildPath($dir, $file));

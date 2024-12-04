@@ -31,6 +31,9 @@ final class ExportCommand extends Command
         'sys_log',
     ];
 
+    /**
+     * @var mixed[]
+     */
     private array $extensionConfiguration;
 
     public function __construct(
@@ -138,7 +141,7 @@ final class ExportCommand extends Command
         ];
 
         foreach ($processes as $process) {
-            $exitCode = $process->run(function ($type, $buffer) use ($output, $path) {
+            $exitCode = $process->run(function ($type, $buffer) use ($output, $path): void {
                 if ($type === Process::ERR) {
                     $output->writeln($buffer);
                 } else {
