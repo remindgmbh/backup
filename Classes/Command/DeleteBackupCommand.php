@@ -16,6 +16,7 @@ final class DeleteBackupCommand extends Command
     private const INPUT_DIR = 'dir';
     private const INPUT_FILE = 'file';
     private const INPUT_KEEP_COUNT = 'keep-count';
+    private const INPUT_NO_COMPRESSION = 'no-compression';
 
     /**
      * @var mixed[]
@@ -52,6 +53,12 @@ final class DeleteBackupCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Number of database backups to keep',
                 $this->extensionConfiguration['delete']['keepCount']
+            )
+            ->addOption(
+                self::INPUT_NO_COMPRESSION,
+                null,
+                InputOption::VALUE_NONE,
+                'Only delete non-compressed backups',
             );
     }
 
@@ -66,6 +73,7 @@ final class DeleteBackupCommand extends Command
 
         $dir = $input->getOption(self::INPUT_DIR);
         $file = $input->getOption(self::INPUT_FILE);
+        $noCompression = $input->getOption(self::INPUT_NO_COMPRESSION);
 
         if (!is_dir($dir)) {
             $output->writeln(sprintf('Directory \'%s\' does not exist.', $dir));
@@ -73,8 +81,8 @@ final class DeleteBackupCommand extends Command
         }
 
         $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING) ?: [], ['.', '..']));
-        $matches = array_filter($files, function (string $fileToCheck) use ($file) {
-            return (bool) preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
+        $matches = array_filter($files, function (string $fileToCheck) use ($file, $noCompression) {
+            return (bool) preg_match(FileNamingUtility::getRegexPattern($file, !$noCompression), $fileToCheck);
         });
 
         $filesToBeDeleted = array_slice($matches, 0, -(int)$input->getOption(self::INPUT_KEEP_COUNT));
