@@ -21,6 +21,7 @@ final class ExportCommand extends Command
     private const INPUT_INCLUDE_CACHE_DATA = 'include-cache-data';
     private const INPUT_INCLUDE_DEFAULT_NO_DATA = 'include-default-no-data';
     private const INPUT_OMIT_TIMESTAMP = 'omit-timestamp';
+    private const INPUT_NO_COMPRESSION = 'no-compression';
     private const DEFAULT_NO_DATA = [
         'be_sessions',
         'fe_sessions',
@@ -52,14 +53,14 @@ final class ExportCommand extends Command
                 self::INPUT_DIR,
                 'd',
                 InputOption::VALUE_OPTIONAL,
-                '',
+                'Directory where backups are stored',
                 $this->extensionConfiguration['defaultDir'],
             )
             ->addOption(
                 self::INPUT_FILE,
                 'f',
                 InputOption::VALUE_OPTIONAL,
-                '',
+                'Filename of the backup without file extension',
                 $this->extensionConfiguration['defaultFile'],
             )
             ->addOption(
@@ -86,6 +87,12 @@ final class ExportCommand extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Omit timestamp in filename'
+            )
+            ->addOption(
+                self::INPUT_NO_COMPRESSION,
+                null,
+                InputOption::VALUE_NONE,
+                'Do not compress the output file',
             );
     }
 
@@ -100,11 +107,14 @@ final class ExportCommand extends Command
 
         $dir = $input->getOption(self::INPUT_DIR);
 
+        $noCompression = $input->getOption(self::INPUT_NO_COMPRESSION);
+
         $path = FileNamingUtility::buildPath(
             $dir,
             $input->getOption(self::INPUT_FILE),
             !$input->getOption(self::INPUT_OMIT_TIMESTAMP),
             true,
+            !$noCompression,
         );
 
         if (file_exists($path)) {
@@ -141,18 +151,23 @@ final class ExportCommand extends Command
             $this->databaseService->mysqldump(['--single-transaction', '--no-create-info', ...$ignoreTableArgs]),
         ];
 
-        foreach ($processes as $process) {
-            $exitCode = $process->run(function ($type, $buffer) use ($output, $path): void {
-                if ($type === Process::ERR) {
-                    $output->writeln($buffer);
-                } else {
-                    file_put_contents($path, $buffer, FILE_APPEND | LOCK_EX);
-                }
-            });
+        $file = $noCompression ? fopen($path, 'a') : gzopen($path, 'a');
 
-            if ($exitCode !== 0) {
-                return Command::FAILURE;
+        if ($file) {
+            foreach ($processes as $process) {
+                $exitCode = $process->run(function ($type, $buffer) use ($output, $file, $noCompression): void {
+                    if ($type === Process::ERR) {
+                        $output->writeln($buffer);
+                    } else {
+                        $noCompression ? fwrite($file, $buffer) : gzwrite($file, $buffer);
+                    }
+                });
+
+                if ($exitCode !== 0) {
+                    return Command::FAILURE;
+                }
             }
+            $noCompression ? fclose($file) : gzclose($file);
         }
 
         return Command::SUCCESS;

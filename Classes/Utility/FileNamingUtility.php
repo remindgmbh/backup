@@ -8,16 +8,18 @@ use TYPO3\CMS\Core\Utility\PathUtility;
 
 class FileNamingUtility
 {
-    public static function getRegexPattern(string $file): string
+    public static function getRegexPattern(string $file, bool $gz = false): string
     {
-        return '/^' . $file . '_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}.sql$/';
+        $gzExtension = $gz ? '.gz' : '';
+        return '/^' . $file . '_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}.sql' . $gzExtension . '$/';
     }
 
     public static function buildPath(
         string $dir,
         string $file,
         ?bool $appendDateTime = false,
-        bool $appendExtension = false
+        bool $appendExtension = false,
+        bool $gz = false,
     ): string {
         $path = PathUtility::sanitizeTrailingSeparator($dir) . $file;
         if ($appendDateTime) {
@@ -25,6 +27,10 @@ class FileNamingUtility
         }
         if ($appendExtension) {
             $path = $path . '.sql';
+
+            if ($gz) {
+                $path = $path . '.gz';
+            }
         }
         return $path;
     }

@@ -16,6 +16,7 @@ final class ImportCommand extends Command
 {
     private const INPUT_DIR = 'dir';
     private const INPUT_FILE = 'file';
+    private const INPUT_NO_COMPRESSION = 'no-compression';
 
     /**
      * @var mixed[]
@@ -37,15 +38,21 @@ final class ImportCommand extends Command
                 self::INPUT_DIR,
                 'd',
                 InputOption::VALUE_OPTIONAL,
-                '',
+                'Directory where backups are stored',
                 $this->extensionConfiguration['defaultDir'],
             )
             ->addOption(
                 self::INPUT_FILE,
                 'f',
                 InputOption::VALUE_OPTIONAL,
-                '',
+                'Filename of the backup without file extension',
                 $this->extensionConfiguration['defaultFile'],
+            )
+            ->addOption(
+                self::INPUT_NO_COMPRESSION,
+                null,
+                InputOption::VALUE_NONE,
+                'Do not use compressed file',
             );
     }
 
@@ -60,8 +67,9 @@ final class ImportCommand extends Command
 
         $dir = $input->getOption(self::INPUT_DIR);
         $file = $input->getOption(self::INPUT_FILE);
+        $noCompression = $input->getOption(self::INPUT_NO_COMPRESSION);
 
-        $path = FileNamingUtility::buildPath($dir, $file, false, true);
+        $path = FileNamingUtility::buildPath($dir, $file, false, true, !$noCompression);
 
         if (!file_exists($path)) {
             if (!is_dir($dir)) {
@@ -70,8 +78,8 @@ final class ImportCommand extends Command
             }
 
             $files = array_values(array_diff(scandir($dir, SCANDIR_SORT_ASCENDING) ?: [], ['.', '..']));
-            $matches = array_filter($files, function (string $fileToCheck) use ($file) {
-                return (bool) preg_match(FileNamingUtility::getRegexPattern($file), $fileToCheck);
+            $matches = array_filter($files, function (string $fileToCheck) use ($file, $noCompression) {
+                return (bool) preg_match(FileNamingUtility::getRegexPattern($file, !$noCompression), $fileToCheck);
             });
             if (!empty($matches)) {
                 $path = FileNamingUtility::buildPath($dir, array_pop($matches));
@@ -82,7 +90,7 @@ final class ImportCommand extends Command
             }
         }
 
-        $stream = fopen($path, 'r');
+        $stream = $noCompression ? fopen($path, 'r') : gzopen($path, 'r');
 
         $process = $this->databaseService->mysql($stream);
 
