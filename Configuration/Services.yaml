@@ -10,13 +10,16 @@ services:
       - name: console.command
         command: 'remind:backup:export'
         description: 'Export database'
+        schedulable: false
   Remind\Backup\Command\ImportCommand:
     tags:
       - name: console.command
         command: 'remind:backup:import'
         description: 'Import database'
+        schedulable: false
   Remind\Backup\Command\DeleteBackupCommand:
     tags:
       - name: console.command
         command: 'remind:backup:delete'
         description: 'Delete database backup'
+        schedulable: false

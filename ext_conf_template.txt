@@ -9,20 +9,25 @@ defaultDir = /var/www/html/backup
 # cat=basic/defaults; type=string; label=Default Filename: Default name of the database dump
 defaultFile = db
 
-delete {
-    # cat=basic/delete; type=boolean; label=Enable Backup Delete: Enable backup delete command
-    enable = 0
+# cat=basic/defaults; type=boolean; label=Compression: Enable or disable compression of the database dump
+compression = 1
 
+delete {
     # cat=basic/delete; type=int+; label=Keep Count: Define how many database backups should be kept
     keepCount = 10
 }
 
 export {
-    # cat=basic/export; type=boolean; label=Enable Export: Enable database export command
-    enable = 0
+    # cat=basic/export; type=string; label=No Data: Table with data excluded, separated by comma
+    noData = 
+
+    # cat=basic/export; type=boolean; label=Include Cache Data: Include Data for Cache Tables
+    includeCacheData = 0
+
+    # cat=basic/export; type=boolean; label=Include Default No Data: Include data for tables that are empty by default
+    includeDefaultNoData = 0
+
+    # cat=basic/export; type=boolean; label=Timestamp: Include timestamp in file name
+    timestamp = 1
 }
 
-import {
-    # cat=basic/import; type=boolean; label=Enable Import: Enable database import command
-    enable = 0
-}

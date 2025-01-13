@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class ExportCommand extends Command
 {
@@ -20,8 +21,8 @@ final class ExportCommand extends Command
     private const INPUT_NO_DATA = 'no-data';
     private const INPUT_INCLUDE_CACHE_DATA = 'include-cache-data';
     private const INPUT_INCLUDE_DEFAULT_NO_DATA = 'include-default-no-data';
-    private const INPUT_OMIT_TIMESTAMP = 'omit-timestamp';
-    private const INPUT_NO_COMPRESSION = 'no-compression';
+    private const INPUT_TIMESTAMP = 'timestamp';
+    private const INPUT_COMPRESSION = 'compression';
     private const DEFAULT_NO_DATA = [
         'be_sessions',
         'fe_sessions',
@@ -68,53 +69,54 @@ final class ExportCommand extends Command
                 null,
                 InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
                 'Table with data excluded',
-                [],
+                GeneralUtility::trimExplode(',', $this->extensionConfiguration['export']['noData']),
             )
             ->addOption(
                 self::INPUT_INCLUDE_CACHE_DATA,
                 null,
-                InputOption::VALUE_NONE,
-                'Include cache tables data'
+                InputOption::VALUE_OPTIONAL,
+                'Include cache tables data',
+                $this->extensionConfiguration['export']['includeCacheData']
             )
             ->addOption(
                 self::INPUT_INCLUDE_DEFAULT_NO_DATA,
                 null,
-                InputOption::VALUE_NONE,
+                InputOption::VALUE_OPTIONAL,
                 sprintf('Include data for tables %s', implode(', ', self::DEFAULT_NO_DATA)),
+                $this->extensionConfiguration['export']['includeDefaultNoData'],
             )
             ->addOption(
-                self::INPUT_OMIT_TIMESTAMP,
+                self::INPUT_TIMESTAMP,
                 null,
-                InputOption::VALUE_NONE,
-                'Omit timestamp in filename'
+                InputOption::VALUE_OPTIONAL,
+                'Include timestamp in filename',
+                $this->extensionConfiguration['export']['timestamp'],
             )
             ->addOption(
-                self::INPUT_NO_COMPRESSION,
+                self::INPUT_COMPRESSION,
                 null,
-                InputOption::VALUE_NONE,
-                'Do not compress the output file',
+                InputOption::VALUE_OPTIONAL,
+                'Compress the output file',
+                $this->extensionConfiguration['compression'],
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (!(bool) $this->extensionConfiguration['export']['enable']) {
-            $output->writeln(
-                'Database export has to be enabled with [\'EXTENSIONS\'][\'rmnd_backup\'][\'export\'][\'enable\'] = 1'
-            );
-            return Command::SUCCESS;
-        }
-
         $dir = $input->getOption(self::INPUT_DIR);
 
-        $noCompression = $input->getOption(self::INPUT_NO_COMPRESSION);
+        $compression = (bool) $input->getOption(self::INPUT_COMPRESSION);
+        $ignoreTables = $input->getOption(self::INPUT_NO_DATA);
+        $includeCacheData = (bool) $input->getOption(self::INPUT_INCLUDE_CACHE_DATA);
+        $includeDefaultNoData = (bool) $input->getOption(self::INPUT_INCLUDE_DEFAULT_NO_DATA);
+        $timestamp = (bool) $input->getOption(self::INPUT_TIMESTAMP);
 
         $path = FileNamingUtility::buildPath(
             $dir,
             $input->getOption(self::INPUT_FILE),
-            !$input->getOption(self::INPUT_OMIT_TIMESTAMP),
+            $timestamp,
             true,
-            !$noCompression,
+            $compression,
         );
 
         if (file_exists($path)) {
@@ -132,13 +134,11 @@ final class ExportCommand extends Command
             return str_starts_with($table, 'cache_');
         });
 
-        $ignoreTables = $input->getOption(self::INPUT_NO_DATA);
-
-        if (!$input->getOption(self::INPUT_INCLUDE_CACHE_DATA)) {
+        if (!$includeCacheData) {
             array_push($ignoreTables, ...$cacheTables);
         }
 
-        if (!$input->getOption(self::INPUT_INCLUDE_DEFAULT_NO_DATA)) {
+        if (!$includeDefaultNoData) {
             array_push($ignoreTables, ...self::DEFAULT_NO_DATA);
         }
 
@@ -151,15 +151,15 @@ final class ExportCommand extends Command
             $this->databaseService->mysqldump(['--single-transaction', '--no-create-info', ...$ignoreTableArgs]),
         ];
 
-        $file = $noCompression ? fopen($path, 'a') : gzopen($path, 'a');
+        $file = $compression ? gzopen($path, 'a') : fopen($path, 'a');
 
         if ($file) {
             foreach ($processes as $process) {
-                $exitCode = $process->run(function ($type, $buffer) use ($output, $file, $noCompression): void {
+                $exitCode = $process->run(function ($type, $buffer) use ($output, $file, $compression): void {
                     if ($type === Process::ERR) {
                         $output->writeln($buffer);
                     } else {
-                        $noCompression ? fwrite($file, $buffer) : gzwrite($file, $buffer);
+                        $compression ? gzwrite($file, $buffer) : fwrite($file, $buffer);
                     }
                 });
 
@@ -167,7 +167,7 @@ final class ExportCommand extends Command
                     return Command::FAILURE;
                 }
             }
-            $noCompression ? fclose($file) : gzclose($file);
+            $compression ? gzclose($file) : fclose($file);
         }
 
         return Command::SUCCESS;
