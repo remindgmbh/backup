@@ -124,6 +124,8 @@ final class ExportCommand extends Command
             return Command::FAILURE;
         }
 
+        $output->writeln(sprintf('Export backup to \'%s\'', $path));
+
         if (!file_exists($dir)) {
             mkdir($dir, 0755, true);
         }
