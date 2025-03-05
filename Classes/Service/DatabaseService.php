@@ -58,7 +58,7 @@ class DatabaseService
      */
     public function getTableNames(): array
     {
-        return $this->connection->getSchemaManager()->listTableNames();
+        return $this->connection->createSchemaManager()->listTableNames();
     }
 
     /**
