@@ -84,7 +84,7 @@ final class ImportCommand extends Command
             }
         }
 
-        $stream = $compression ? fopen($path, 'r') : gzopen($path, 'r');
+        $stream = $compression ? gzopen($path, 'r') : fopen($path, 'r');
 
         $process = $this->databaseService->mysql($stream);
 
