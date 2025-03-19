@@ -155,6 +155,10 @@ final class ExportCommand extends Command
 
         $file = $compression ? gzopen($path, 'a') : fopen($path, 'a');
 
+        $tmpPath = tempnam(sys_get_temp_dir(), '');
+
+        $file = $compression ? gzopen($tmpPath, 'a') : fopen($tmpPath, 'a');
+
         if ($file) {
             foreach ($processes as $process) {
                 $exitCode = $process->run(function ($type, $buffer) use ($output, $file, $compression): void {
@@ -170,6 +174,11 @@ final class ExportCommand extends Command
                 }
             }
             $compression ? gzclose($file) : fclose($file);
+        }
+
+        if (!rename($tmpPath, $path)) {
+            $output->writeln(sprintf('Failed to move file from \'%s\' to \'%s\'', $tmpPath, $path));
+            return Command::FAILURE;
         }
 
         return Command::SUCCESS;
