@@ -6,12 +6,14 @@ namespace Remind\Backup\Service;
 
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Process\Process;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class DatabaseService
 {
     private const CONNECTION_NAME = 'Default';
+    private const SSL_DISABLED = '--ssl=0';
 
     /**
      * @var mixed[]
@@ -22,11 +24,20 @@ class DatabaseService
 
     private ?string $myCnf = null;
 
+    /**
+     * @var mixed[]
+     */
+    private array $extensionConfiguration;
+
+    private bool $skipSsl = false;
+
     public function __construct()
     {
         $this->connectionConfig = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections'][self::CONNECTION_NAME];
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
         $this->connection = $connectionPool->getConnectionByName(self::CONNECTION_NAME);
+        $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('rmnd_backup');
+        $this->skipSsl = (bool) ($this->extensionConfiguration['skipSsl'] ?? false);
     }
 
     public function mysql(mixed $input = null): Process
@@ -66,7 +77,7 @@ class DatabaseService
      */
     private function buildConnectionArguments(): array
     {
-        return [
+        $args = [
             '--defaults-file=' . $this->createMyCnf(),
             '-h',
             $this->connectionConfig['host'],
@@ -74,6 +85,12 @@ class DatabaseService
             $this->connectionConfig['port'],
             $this->getDbName(),
         ];
+
+        if ($this->skipSsl) {
+            $args[] = self::SSL_DISABLED;
+        }
+
+        return $args;
     }
 
     private function createMyCnf(): string

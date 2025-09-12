@@ -12,6 +12,9 @@ defaultFile = db
 # cat=basic/defaults; type=boolean; label=Compression: Enable or disable compression of the database dump
 compression = 1
 
+# cat=basic/defaults; type=boolean; label=Skip SSL: Disable SSL for mysql operations
+skipSsl = 0
+
 delete {
     # cat=basic/delete; type=int+; label=Keep Count: Define how many database backups should be kept
     keepCount = 10
